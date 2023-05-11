@@ -64,7 +64,7 @@ const makeQuestionRepository = (fileName) => {
   };
 
   const saveQuestions = async (questions) => {
-    await writeFileSync(fileName, JSON.stringify(questions));
+    await writeFileSync(fileName, JSON.stringify(questions)); // I encountered several errors with reading file when using the asynchronous version so I decided to use synchronous.
   };
 
   return {
