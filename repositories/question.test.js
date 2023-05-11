@@ -1,4 +1,4 @@
-const { writeFile, rm } = require("fs/promises");
+const { rm } = require("fs/promises");
 const { faker } = require("@faker-js/faker");
 const { makeQuestionRepository } = require("./question");
 const { NotFoundError } = require("../notFoundError");
@@ -9,8 +9,6 @@ describe("question repository", () => {
   let questionRepo;
 
   beforeAll(async () => {
-    writeFileSync(TEST_QUESTIONS_FILE_PATH, JSON.stringify([]));
-
     questionRepo = makeQuestionRepository(TEST_QUESTIONS_FILE_PATH);
   });
 
@@ -19,6 +17,7 @@ describe("question repository", () => {
   });
 
   test("should return a list of 0 questions", async () => {
+    writeFileSync(TEST_QUESTIONS_FILE_PATH, JSON.stringify([]));
     expect(await questionRepo.getQuestions()).toHaveLength(0);
   });
 
