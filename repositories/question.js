@@ -1,6 +1,6 @@
 const { readFile } = require("fs/promises");
 const { v4: uuidv4 } = require("uuid");
-const { NotFoundError } = require("../notFoundError");
+const { NotFoundError } = require("../errors/notFoundError");
 const { writeFileSync } = require("fs");
 
 const makeQuestionRepository = (fileName) => {

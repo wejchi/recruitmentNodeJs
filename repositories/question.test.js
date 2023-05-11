@@ -1,7 +1,7 @@
 const { rm } = require("fs/promises");
 const { faker } = require("@faker-js/faker");
 const { makeQuestionRepository } = require("./question");
-const { NotFoundError } = require("../notFoundError");
+const { NotFoundError } = require("../errors/notFoundError");
 const { writeFileSync } = require("fs");
 
 describe("question repository", () => {

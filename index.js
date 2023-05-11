@@ -1,6 +1,6 @@
 const express = require("express");
 const { urlencoded, json } = require("body-parser");
-const { NotFoundError } = require("./notFoundError");
+const { NotFoundError } = require("./errors/notFoundError");
 const makeRepositories = require("./middleware/repositories");
 const { checkSchema, validationResult } = require("express-validator");
 
