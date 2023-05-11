@@ -1,5 +1,6 @@
 const express = require("express");
 const { urlencoded, json } = require("body-parser");
+const { NotFoundError } = require("./notFoundError");
 const makeRepositories = require("./middleware/repositories");
 
 const STORAGE_FILE_PATH = "questions.json";
@@ -21,44 +22,74 @@ app.get("/questions", async (req, res) => {
 });
 
 app.get("/questions/:questionId", async (req, res) => {
-  const question = await req.repositories.questionRepo.getQuestionById(
-    req.params.questionId
-  );
-  if (question) {
+  try {
+    const question = await req.repositories.questionRepo.getQuestionById(
+      req.params.questionId
+    );
     res.json({
       id: question.id,
       author: question.author,
       summary: question.summary
     });
-  } else {
-    res.status(404).send("Question not found");
+  } catch (error) {
+    handleError(error, res);
   }
 });
 
 app.post("/questions", async (req, res) => {
-  const question = await req.repositories.questionRepo.addQuestion(req.body);
-  res.json(question);
+  try {
+    const question = await req.repositories.questionRepo.addQuestion(req.body);
+    res.json({
+      id: question.id,
+      author: question.author,
+      summary: question.summary
+    });
+  } catch (error) {
+    handleError(error, res);
+  }
 });
 
 app.get("/questions/:questionId/answers", async (req, res) => {
-  res.json(
-    await req.repositories.questionRepo.getAnswers(req.params.questionId)
-  );
+  try {
+    res.json(
+      await req.repositories.questionRepo.getAnswers(req.params.questionId)
+    );
+  } catch (error) {
+    handleError(error, res);
+  }
 });
 
 app.post("/questions/:questionId/answers", async (req, res) => {
-  await req.repositories.questionRepo.addAnswer(
-    req.params.questionId,
-    req.body
-  );
+  try {
+    const answer = await req.repositories.questionRepo.addAnswer(
+      req.params.questionId,
+      req.body
+    );
+    res.json(answer);
+  } catch (error) {
+    handleError(error, res);
+  }
 });
 
 app.get("/questions/:questionId/answers/:answerId", async (req, res) => {
-  const answer = await req.repositories.questionRepo.getAnswer(
-    req.params.questionId,
-    req.params.answerId
-  );
+  try {
+    const answer = await req.repositories.questionRepo.getAnswer(
+      req.params.questionId,
+      req.params.answerId
+    );
+    res.json(answer);
+  } catch (error) {
+    handleError(error, res);
+  }
 });
+
+function handleError(error, res) {
+  if (error instanceof NotFoundError) {
+    res.status(404).json({ error: error.message });
+  } else {
+    res.sendStatus(500);
+  }
+}
 
 app.listen(PORT, () => {
   console.log(`Responder app listening on port ${PORT}`);
