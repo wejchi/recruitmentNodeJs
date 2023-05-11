@@ -1,6 +1,7 @@
-const { readFile, writeFile } = require("fs/promises");
+const { readFile } = require("fs/promises");
 const { v4: uuidv4 } = require("uuid");
 const { NotFoundError } = require("../notFoundError");
+const { writeFileSync } = require("fs");
 
 const makeQuestionRepository = (fileName) => {
   const getQuestions = async () => {
@@ -33,7 +34,7 @@ const makeQuestionRepository = (fileName) => {
   };
 
   const getAnswer = async (questionId, answerId) => {
-    const answers = getAnswers(questionId);
+    const answers = await getAnswers(questionId);
     const answer = await answers.find((answer) => answer.id === answerId);
     if (!answer) {
       throw new NotFoundError("answer not found");
@@ -63,7 +64,7 @@ const makeQuestionRepository = (fileName) => {
   };
 
   const saveQuestions = async (questions) => {
-    await writeFile(fileName, JSON.stringify(questions));
+    await writeFileSync(fileName, JSON.stringify(questions));
   };
 
   return {
