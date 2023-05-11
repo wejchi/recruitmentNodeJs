@@ -2,6 +2,7 @@ const express = require("express");
 const { urlencoded, json } = require("body-parser");
 const { NotFoundError } = require("./notFoundError");
 const makeRepositories = require("./middleware/repositories");
+const { checkSchema, validationResult } = require("express-validator");
 
 const STORAGE_FILE_PATH = "questions.json";
 const PORT = 3000;
@@ -26,28 +27,38 @@ app.get("/questions/:questionId", async (req, res) => {
     const question = await req.repositories.questionRepo.getQuestionById(
       req.params.questionId
     );
-    res.json({
-      id: question.id,
-      author: question.author,
-      summary: question.summary
-    });
+    res.json(question);
   } catch (error) {
     handleError(error, res);
   }
 });
 
-app.post("/questions", async (req, res) => {
-  try {
-    const question = await req.repositories.questionRepo.addQuestion(req.body);
-    res.json({
-      id: question.id,
-      author: question.author,
-      summary: question.summary
-    });
-  } catch (error) {
-    handleError(error, res);
+app.post(
+  "/questions",
+  checkSchema({
+    author: { notEmpty: true },
+    summary: { notEmpty: true }
+  }),
+  async (req, res) => {
+    const result = validationResult(req);
+    if (!result.isEmpty()) {
+      return res.json({ errors: result.array() });
+    }
+
+    try {
+      const question = await req.repositories.questionRepo.addQuestion(
+        req.body
+      );
+      res.json({
+        id: question.id,
+        author: question.author,
+        summary: question.summary
+      });
+    } catch (error) {
+      handleError(error, res);
+    }
   }
-});
+);
 
 app.get("/questions/:questionId/answers", async (req, res) => {
   try {
@@ -59,17 +70,29 @@ app.get("/questions/:questionId/answers", async (req, res) => {
   }
 });
 
-app.post("/questions/:questionId/answers", async (req, res) => {
-  try {
-    const answer = await req.repositories.questionRepo.addAnswer(
-      req.params.questionId,
-      req.body
-    );
-    res.json(answer);
-  } catch (error) {
-    handleError(error, res);
+app.post(
+  "/questions/:questionId/answers",
+  checkSchema({
+    author: { notEmpty: true },
+    summary: { notEmpty: true }
+  }),
+  async (req, res) => {
+    const result = validationResult(req);
+    if (!result.isEmpty()) {
+      return res.json({ errors: result.array() });
+    }
+
+    try {
+      const answer = await req.repositories.questionRepo.addAnswer(
+        req.params.questionId,
+        req.body
+      );
+      res.json(answer);
+    } catch (error) {
+      handleError(error, res);
+    }
   }
-});
+);
 
 app.get("/questions/:questionId/answers/:answerId", async (req, res) => {
   try {
@@ -85,9 +108,9 @@ app.get("/questions/:questionId/answers/:answerId", async (req, res) => {
 
 function handleError(error, res) {
   if (error instanceof NotFoundError) {
-    res.status(404).json({ error: error.message });
+    return res.status(404).json({ error: error.message });
   } else {
-    res.sendStatus(500);
+    return res.sendStatus(500);
   }
 }
 
